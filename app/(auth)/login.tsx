@@ -36,7 +36,7 @@ export default function LoginScreen({ navigation }: Props) {
                 text1: 'Login Successful',
                 position: 'top',
             });
-            // No need to navigate manually if you have an auth listener in App.tsx
+            router.replace('/home')
         } catch (error: any) {
             console.log(error)
             Toast.show({
