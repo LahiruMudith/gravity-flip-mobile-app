@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth } from '@/services/firebase';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; // Import the types you created above
+import { RootStackParamList } from '../constants/types';
+import {useRouter} from "expo-router";
+import {loginUser} from "@/services/authService"; // Import the types you created above
+import Toast from 'react-native-toast-message';
+import {toastConfig} from "@/app/constants/toastConfig";
 
 // Define the navigation prop type for this screen
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -13,24 +17,33 @@ type Props = {
 };
 
 export default function LoginScreen({ navigation }: Props) {
+    const router = useRouter()
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
+        if (!email || !password) return Toast.show({
+            type: 'error',
+            text1: 'Missing Field',
+        });
 
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            // Navigation is usually handled automatically by an onAuthStateChanged listener in your App.tsx
-            // But if you handle it manually:
-            // navigation.replace('Home');
+            const userCredential = await loginUser(email, password);
+            Toast.show({
+                type: 'success',
+                text1: 'Login Successful',
+                position: 'top',
+            });
+            // No need to navigate manually if you have an auth listener in App.tsx
         } catch (error: any) {
-            Alert.alert('Login Failed', error.message);
+            console.log(error)
+            Toast.show({
+                type: 'error',
+                text1: 'Login Failed',
+                text2: error.message,
+            });
         } finally {
             setLoading(false);
         }
@@ -86,10 +99,15 @@ export default function LoginScreen({ navigation }: Props) {
             {/* Toggle to Signup */}
             <View className="flex-row mt-6">
                 <Text className="text-gray-400">Don&#39;t have an account? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                <TouchableOpacity
+                    onPress={() => {
+                        router.push('/signup');
+                    }}
+                >
                     <Text className="text-green-400 font-bold">Sign Up</Text>
                 </TouchableOpacity>
             </View>
+            <Toast config={toastConfig}/>
         </View>
     );
 }

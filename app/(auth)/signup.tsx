@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+// 1. Import updateProfile
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '@/services/firebase';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../constants/types';
+import { useRouter } from "expo-router";
+import {registerUser} from "@/services/authService";
+import Toast from 'react-native-toast-message';
 
-// Define the navigation prop type for this screen
+
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
 
 type Props = {
@@ -13,23 +17,46 @@ type Props = {
 };
 
 export default function SignupScreen({ navigation }: Props) {
+    const router = useRouter();
+    // 2. Add state for Full Name
+    const [fullName, setFullName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleSignup = async () => {
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
+        // 3. Update validation
+        if (!email || !password || !fullName) {
+            Toast.show({
+                type: 'error',
+                text1: 'Please fill in all fields',
+            });
             return;
         }
 
         setLoading(true);
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            Alert.alert('Success', 'Account created! Logging you in...');
-            // Navigation is usually handled automatically by auth listener
+            // Create the user
+            const userCredential = await registerUser(email, password, fullName);
+
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: fullName
+                });
+            }
+            Toast.show({
+                type: 'success',
+                text1: 'Account Created!',
+                text2: 'You can now save your high scores to the leaderboard.',
+            });
+
+            router.replace('/login');
         } catch (error: any) {
-            Alert.alert('Signup Failed', error.message);
+            Toast.show({
+                type: 'error',
+                text1: 'Signup Error',
+                text2: error.message,
+            });
         } finally {
             setLoading(false);
         }
@@ -41,6 +68,19 @@ export default function SignupScreen({ navigation }: Props) {
                 Join the Race
             </Text>
             <Text className="text-gray-400 mb-10 text-base">Create an account to save your scores</Text>
+
+            {/* 5. Full Name Input Field */}
+            <View className="w-full mb-4">
+                <Text className="text-gray-300 mb-2 ml-1">Full Name</Text>
+                <TextInput
+                    className="w-full bg-gray-800 text-white p-4 rounded-xl border border-gray-700 focus:border-green-500"
+                    placeholder="John Doe"
+                    placeholderTextColor="#6b7280"
+                    value={fullName}
+                    onChangeText={setFullName}
+                    autoCapitalize="words"
+                />
+            </View>
 
             {/* Email Input */}
             <View className="w-full mb-4">
@@ -78,17 +118,18 @@ export default function SignupScreen({ navigation }: Props) {
                 {loading ? (
                     <ActivityIndicator color="#000" />
                 ) : (
-                    <Text className="text-gray-900 font-bold text-lg">SIGN UP</Text>
+                    <Text  className="text-gray-900 font-bold text-lg">SIGN UP</Text>
                 )}
             </TouchableOpacity>
 
             {/* Toggle to Login */}
             <View className="flex-row mt-6">
                 <Text className="text-gray-400">Already have an account? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity onPress={() => router.push('/login')}>
                     <Text className="text-green-400 font-bold">Log In</Text>
                 </TouchableOpacity>
             </View>
+            <Toast />
         </View>
     );
 }
