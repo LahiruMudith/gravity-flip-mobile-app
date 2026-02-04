@@ -1,122 +1,90 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import "@/global.css";
+import { Canvas } from '@react-three/fiber/native';
+import { Player } from '@/components/player';
+import { ScrollingTunnel } from '@/components/ScrollingTunnel';
+import { Obstacle } from '@/components/Obstacle';
+import { useState, useRef } from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
-
-// Game Constants
-const GRAVITY_FORCE = 0.8;
-const CEILING = 50;
-const FLOOR = height - 100;
-
-export default function GravityFlip() {
-    const router = useRouter();
-
-    // Game State
-    const [posY, setPosY] = useState(height / 2);
-    const [velocity, setVelocity] = useState(0);
-    const [isUpsideDown, setIsUpsideDown] = useState(false);
+export default function GravityFlip3D() {
+    const [isFlipped, setIsFlipped] = useState(false);
     const [score, setScore] = useState(0);
-    const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
+    const [isGameOver, setIsGameOver] = useState(false);
 
-    // Refs for the game loop (avoids re-render lag)
-    const requestRef = useRef<number>(0);
-    const posRef = useRef(height / 2);
-    const velRef = useRef(0);
-    const gravityRef = useRef(GRAVITY_FORCE);
+    // We use refs for collision to avoid React re-render lag
+    const playerY = useRef(0);
+    const obstaclePositions = useRef([
+        { id: 1, z: -30, y: 4 },
+        { id: 2, z: -60, y: -4 },
+        { id: 3, z: -90, y: 4 }
+    ]);
 
-    const flipGravity = () => {
-        if (gameState !== 'PLAYING') return;
-
-        // Reverse the gravity direction
-        gravityRef.current = isUpsideDown ? GRAVITY_FORCE : -GRAVITY_FORCE;
-        setIsUpsideDown(!isUpsideDown);
+    const handleCollision = () => {
+        setIsGameOver(true);
+        // Here you could play a "Crash" sound or vibrate the phone
     };
 
-    const startGame = () => {
+    const resetGame = () => {
+        setIsGameOver(false);
         setScore(0);
-        setGameState('PLAYING');
-        posRef.current = height / 2;
-        velRef.current = 0;
-        gravityRef.current = GRAVITY_FORCE;
+        setIsFlipped(false);
     };
-
-    const gameLoop = () => {
-        if (gameState === 'PLAYING') {
-            // 1. Update Velocity based on gravity
-            velRef.current += gravityRef.current;
-
-            // 2. Update Position based on velocity
-            posRef.current += velRef.current;
-
-            // 3. Collision Detection (Ceiling & Floor)
-            if (posRef.current >= FLOOR) {
-                posRef.current = FLOOR;
-                velRef.current = 0;
-            } else if (posRef.current <= CEILING) {
-                posRef.current = CEILING;
-                velRef.current = 0;
-            }
-
-            // 4. Update UI
-            setPosY(posRef.current);
-            setScore(prev => prev + 1); // Increment score over time
-        }
-        requestRef.current = requestAnimationFrame(gameLoop);
-    };
-
-    useEffect(() => {
-        requestRef.current = requestAnimationFrame(gameLoop);
-        return () => cancelAnimationFrame(requestRef.current!);
-    }, [gameState]);
 
     return (
         <View className="flex-1 bg-black">
-            <StatusBar hidden />
-
-            {/* Scoreboard */}
-            <View className="absolute top-12 w-full items-center z-10">
-                <Text className="text-green-400 text-5xl font-black">{Math.floor(score / 10)}</Text>
+            {/* HUD Overlay */}
+            <View className="absolute top-12 left-0 right-0 items-center z-10">
+                <Text className="text-green-400 text-4xl font-black">{score}</Text>
             </View>
 
-            {/* Main Game Area */}
+            {/* Game Over Screen */}
+            {isGameOver && (
+                <View className="absolute inset-0 bg-black/80 items-center justify-center z-50">
+                    <Text className="text-red-500 text-5xl font-black mb-4">CRASHED</Text>
+                    <TouchableOpacity
+                        onPress={resetGame}
+                        className="bg-green-400 px-10 py-4 rounded-xl"
+                    >
+                        <Text className="text-black font-bold text-lg">RETRY</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             <TouchableOpacity
                 activeOpacity={1}
-                onPress={gameState === 'PLAYING' ? flipGravity : startGame}
+                onPress={() => !isGameOver && setIsFlipped(!isFlipped)}
                 className="flex-1"
             >
-                {/* Top Boundary */}
-                <View className="absolute top-0 w-full h-12 bg-zinc-900 border-b-2 border-green-900" />
-
-                {/* Player Sprite */}
-                <View
-                    style={{ top: posY }}
-                    className="absolute left-20 w-12 h-12 bg-green-400 rounded-md shadow-lg shadow-green-500/50 items-center justify-center"
+                <Canvas camera={{ position: [0, 0, 15], fov: 50 }} // Pull back on Z to see the side view
+                        gl={{ antialias: false, pixelRatio: 1 }}
                 >
-                    {/* Small eye to show direction */}
-                    <View className={`w-2 h-2 bg-black rounded-full mb-1 ${isUpsideDown ? 'mt-4' : 'mt-0'}`} />
-                </View>
+                    <ambientLight intensity={0.5} />
+                    <pointLight position={[10, 10, 10]} color="#00FF00" intensity={2} />
 
-                {/* Bottom Boundary */}
-                <View className="absolute bottom-0 w-full h-24 bg-zinc-900 border-t-2 border-green-900" />
+                    <Player
+                        isFlipped={isFlipped}
+                        onUpdateY={(y:any) => (playerY.current = y)}
+                    />
 
-                {/* Start / Game Over Overlays */}
-                {gameState !== 'PLAYING' && (
-                    <View className="absolute inset-0 bg-black/70 items-center justify-center">
-                        <Text className="text-white text-4xl font-bold mb-4">
-                            {gameState === 'START' ? 'READY?' : 'CRASHED!'}
-                        </Text>
-                        <Text className="text-green-400 text-lg mb-8">
-                            TAP TO {gameState === 'START' ? 'START' : 'RETRY'}
-                        </Text>
-                        <TouchableOpacity onPress={() => router.replace('/')}>
-                            <Text className="text-zinc-500">BACK TO MENU</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                    {!isGameOver && (
+                        <>
+                            <Obstacle
+                                startPos={[0, 4, -40]}
+                                playerY={playerY}
+                                isGameOver={isGameOver}
+                                onCollide={handleCollision}
+                                onPass={() => setScore(s => s + 1)}
+                            />
+                            <Obstacle
+                                startPos={[0, 4, -40]}
+                                playerY={playerY}
+                                isGameOver={isGameOver}
+                                onCollide={handleCollision}
+                                onPass={() => setScore(s => s + 1)}
+                            />
+                        </>
+                    )}
+                    <ScrollingTunnel />
+                </Canvas>
             </TouchableOpacity>
         </View>
     );
