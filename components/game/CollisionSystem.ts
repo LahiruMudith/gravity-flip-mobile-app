@@ -18,7 +18,7 @@ const CollisionSystem = (entities: any, { dispatch }: any) => {
             (bodyB.label === "Player" && bodyA.label === "Obstacle")
         ) {
             // Send a signal to the App to stop the game
-            dispatch({ type: "game-over" });
+            dispatch({ type: "game-over", score: entities.score.value });
         }
     }
 

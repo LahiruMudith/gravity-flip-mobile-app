@@ -9,6 +9,19 @@ const Physics = (entities: any, { touches, time, dispatch }: any) => {
         return entities;
     }
 
+    if (entities.score) {
+        // 1. Initialize a "tick" counter if it doesn't exist
+        if (typeof entities.score.ticks === 'undefined') entities.score.ticks = 0;
+
+        // 2. Count the frames
+        entities.score.ticks++;
+
+        // 3. Only add 1 point every 10 frames (Adjust '10' to make it faster/slower)
+        if (entities.score.ticks % 35 === 0) {
+            entities.score.value += 1;
+        }
+    }
+
     // 1. Handle Taps
     // We use "find" to see if there is at least one 'press' event
     let press = touches.find((t: any) => t.type === "press");
@@ -22,9 +35,7 @@ const Physics = (entities: any, { touches, time, dispatch }: any) => {
         // Matter.Body.applyForce(entities.player.body, entities.player.body.position, { x: 0, y: -0.05 * engine.world.gravity.y });
     }
 
-    // 2. Update Physics Engine
     Matter.Engine.update(engine, time.delta);
-
     return entities;
 };
 
