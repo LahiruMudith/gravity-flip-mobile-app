@@ -1,91 +1,122 @@
-import { Canvas } from '@react-three/fiber/native';
-import { Player } from '@/components/player';
-import { ScrollingTunnel } from '@/components/ScrollingTunnel';
-import { Obstacle } from '@/components/Obstacle';
-import { useState, useRef } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+// app/(dashboard)/game.tsx
+import React, { useRef, useState } from 'react';
+import { View, Dimensions, StyleSheet, StatusBar } from 'react-native';
+import { GameEngine } from 'react-native-game-engine';
+import Matter from 'matter-js';
+import { Alert } from 'react-native'; // Import Alert
 
-export default function GravityFlip3D() {
-    const [isFlipped, setIsFlipped] = useState(false);
-    const [score, setScore] = useState(0);
-    const [isGameOver, setIsGameOver] = useState(false);
+// Import your components
+import Box from '../../components/game/Box';
+import Physics from '../../components/game/Physics';
+import ObstacleSystem from '../../components/game/ObstacleSystem';
+import CollisionSystem from '../../components/game/CollisionSystem';
 
-    // We use refs for collision to avoid React re-render lag
-    const playerY = useRef(0);
-    const obstaclePositions = useRef([
-        { id: 1, z: -30, y: 4 },
-        { id: 2, z: -60, y: -4 },
-        { id: 3, z: -90, y: 4 }
-    ]);
+const { width, height } = Dimensions.get("window");
 
-    const handleCollision = () => {
-        setIsGameOver(true);
-        // Here you could play a "Crash" sound or vibrate the phone
+export default function GameScreen() {
+    const [running, setRunning] = useState(true);
+    const gameEngineRef = useRef<GameEngine>(null);
+
+
+    // --- SETUP THE WORLD ---
+    // We wrap this in a function so we can restart the game easily later
+    const setupWorld = () => {
+        const engine = Matter.Engine.create({ enableSleeping: false });
+        const world = engine.world;
+
+        // 1. Create Player (Red Box)
+        const playerBody = Matter.Bodies.rectangle(100, height / 2, 50, 50, {
+            frictionAir: 0.05,
+            restitution: 0.8,
+            label: "Player"
+        });
+
+        // 2. Create Floor (Static)
+        const floorBody = Matter.Bodies.rectangle(width / 2, height - 25, width, 50, {
+            isStatic: true,
+            label: "Floor"
+        });
+
+        // 3. Create Ceiling (Static)
+        const ceilingBody = Matter.Bodies.rectangle(width / 2, 25, width, 50, {
+            isStatic: true,
+            label: "Ceiling"
+        });
+
+        // Add everything to the physics world
+        Matter.World.add(world, [playerBody, floorBody, ceilingBody]);
+
+        return {
+            physics: { engine: engine, world: world },
+
+            // CHANGE THIS: Remove the < > brackets
+            player: {
+                body: playerBody,
+                size: [50, 50],
+                color: 'red',
+                renderer: Box  // <--- Just pass the name "Box"
+            },
+
+            floor: {
+                body: floorBody,
+                size: [width, 50],
+                color: 'grey',
+                renderer: Box // <--- Here too
+            },
+
+            ceiling: {
+                body: ceilingBody,
+                size: [width, 50],
+                color: 'grey',
+                renderer: Box // <--- And here
+            },
+        };
     };
 
-    const resetGame = () => {
-        setIsGameOver(false);
-        setScore(0);
-        setIsFlipped(false);
+    // Handle Game Events
+    const onEvent = (e: any) => {
+        if (e.type === "game-over") {
+            setRunning(false);
+            Alert.alert("Game Over", "You hit a wall!", [
+                {
+                    text: "Try Again",
+                    onPress: () => {
+                        setRunning(true);
+                        // Fix applied below:
+                        gameEngineRef.current?.swap(setupWorld());
+                    }
+                }
+            ]);
+        }
     };
 
     return (
-        <View className="flex-1 bg-black">
-            {/* HUD Overlay */}
-            <View className="absolute top-12 left-0 right-0 items-center z-10">
-                <Text className="text-green-400 text-4xl font-black">{score}</Text>
-            </View>
-
-            {/* Game Over Screen */}
-            {isGameOver && (
-                <View className="absolute inset-0 bg-black/80 items-center justify-center z-50">
-                    <Text className="text-red-500 text-5xl font-black mb-4">CRASHED</Text>
-                    <TouchableOpacity
-                        onPress={resetGame}
-                        className="bg-green-400 px-10 py-4 rounded-xl"
-                    >
-                        <Text className="text-black font-bold text-lg">RETRY</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => !isGameOver && setIsFlipped(!isFlipped)}
-                className="flex-1"
+        <View style={styles.container}>
+            <GameEngine
+                ref={gameEngineRef}
+                style={styles.gameContainer}
+                // ADD CollisionSystem HERE:
+                systems={[Physics, ObstacleSystem, CollisionSystem]}
+                entities={setupWorld()}
+                running={running}
+                onEvent={onEvent} // <--- Listen for Game Over
             >
-                <Canvas camera={{ position: [0, 0, 15], fov: 50 }} // Pull back on Z to see the side view
-                        gl={{ antialias: false, pixelRatio: 1 }}
-                >
-                    <ambientLight intensity={0.5} />
-                    <pointLight position={[10, 10, 10]} color="#00FF00" intensity={2} />
-
-                    <Player
-                        isFlipped={isFlipped}
-                        onUpdateY={(y:any) => (playerY.current = y)}
-                    />
-
-                    {!isGameOver && (
-                        <>
-                            <Obstacle
-                                startPos={[0, 4, -40]}
-                                playerY={playerY}
-                                isGameOver={isGameOver}
-                                onCollide={handleCollision}
-                                onPass={() => setScore(s => s + 1)}
-                            />
-                            <Obstacle
-                                startPos={[0, 4, -40]}
-                                playerY={playerY}
-                                isGameOver={isGameOver}
-                                onCollide={handleCollision}
-                                onPass={() => setScore(s => s + 1)}
-                            />
-                        </>
-                    )}
-                    <ScrollingTunnel />
-                </Canvas>
-            </TouchableOpacity>
+                <StatusBar hidden={true} />
+            </GameEngine>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
+    },
+    gameContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+});
