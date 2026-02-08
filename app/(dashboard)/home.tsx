@@ -28,7 +28,7 @@ export default function HomePage() {
                 {/* Profile Button - uses 'bg-zinc-800' for a secondary look */}
                 <TouchableOpacity
                     className="bg-zinc-800 py-4 rounded-xl items-center active:bg-zinc-700"
-                    onPress={() => router.push('/(auth)/login')}
+                    onPress={() => router.push('/profile')}
                 >
                     <Text className="text-white text-lg font-bold">PROFILE</Text>
                 </TouchableOpacity>
@@ -36,7 +36,7 @@ export default function HomePage() {
 
             {/* Footer referencing your brand */}
             <Text className="absolute bottom-10 text-zinc-500 text-xs uppercase tracking-tighter">
-                Developed by Web Sonic
+                Developed by Lahiru Mudith
             </Text>
         </View>
     );

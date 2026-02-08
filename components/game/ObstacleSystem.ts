@@ -39,7 +39,7 @@ const ObstacleSystem = (entities: any, { time, dispatch }: any) => {
         // Create random height for the gap
         // Simple version: Just spawn a block on the floor or ceiling randomly
         const isTop = Math.random() < 0.5;
-        const yPos = isTop ? height / 4 : height - height / 5;
+        const yPos = isTop ? height / 5 : height - height / 5;
 
         const obstacleBody = Matter.Bodies.rectangle(
             width + 100, // Spawn off-screen to the right
