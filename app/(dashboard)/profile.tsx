@@ -11,10 +11,10 @@ import { auth } from '@/services/firebase'; // Adjust path if needed
 import Toast from 'react-native-toast-message';
 
 // Import Services
-import { updateUserName, updateUserEmail, updateUserPassword } from '../../services/profileService';
-import { logoutUser } from '../../services/authService'; // Assuming you have this from before
-import { uploadToCloudinary } from '../../services/cloudinaryService';
-import { saveProfileUrlToFirebase } from '../../services/profileService';
+import { updateUserName, updateUserEmail, updateUserPassword, saveProfileUrlToFirebase } from '@/services/profileService';
+import { logoutUser } from '@/services/authService'; // Assuming you have this from before
+import { uploadToCloudinary } from '@/services/cloudinaryService';
+import {toastConfig} from "@/constants/toastConfig";
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -28,8 +28,8 @@ export default function ProfileScreen() {
         name: auth.currentUser?.displayName || "Cyber Player",
         email: auth.currentUser?.email || "player@websonic.com",
         photo: auth.currentUser?.photoURL || null,
-        highScore: 4969, // Replace with real Firestore data later
-        lastScore: 120,
+        highScore: 0, // Replace with real Firestore data later
+        lastScore: 0,
     });
 
     // Form States
@@ -62,7 +62,6 @@ export default function ProfileScreen() {
             Toast.show({
                 type: 'success',
                 text1: 'Photo Updated',
-                text2: 'Your new avatar looks great!',
                 visibilityTime: 3000,
             });
 
@@ -71,7 +70,6 @@ export default function ProfileScreen() {
             Toast.show({
                 type: 'error',
                 text1: 'Upload Failed',
-                text2: error.message || "Something went wrong.",
             });
         } finally {
             setIsLoading(false);
@@ -98,7 +96,10 @@ export default function ProfileScreen() {
     const takePhoto = async () => {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
-            Alert.alert("Permission Required", "Camera access is needed.");
+            Toast.show({
+                type: 'error',
+                text1: 'Permission Required',
+            });
             return;
         }
 
@@ -128,14 +129,12 @@ export default function ProfileScreen() {
             Toast.show({
                 type: 'success',
                 text1: 'Username Updated',
-                text2: `You are now known as ${tempName}`,
             });
 
         } catch (error: any) {
             Toast.show({
                 type: 'error',
                 text1: 'Update Failed',
-                text2: error.message,
             });
         } finally {
             setIsLoading(false);
@@ -149,12 +148,22 @@ export default function ProfileScreen() {
             await updateUserEmail(tempEmail);
             setUser({ ...user, email: tempEmail }); // Update UI
             setActiveModal("none");
-            Alert.alert("Success", "Email updated!");
+            Toast.show({
+                type: 'success',
+                text1: 'Email Updated',
+            });
         } catch (error: any) {
             if (error.code === 'auth/requires-recent-login') {
-                Alert.alert("Security Check", "Please log out and log in again to change your email.");
+                Toast.show({
+                    type: 'error',
+                    text1: 'Please Log Again',
+                });
+                router.replace('/login');
             } else {
-                Alert.alert("Error", error.message);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Update Failed',
+                });
             }
         } finally {
             setIsLoading(false);
@@ -167,12 +176,22 @@ export default function ProfileScreen() {
         try {
             await updateUserPassword(tempPassword);
             setActiveModal("none");
-            Alert.alert("Success", "Password changed successfully!");
+            Toast.show({
+                type: 'success',
+                text1: 'Password Updated',
+            });
         } catch (error: any) {
             if (error.code === 'auth/requires-recent-login') {
-                Alert.alert("Security Check", "Please log out and log in again to change your password.");
+                Toast.show({
+                    type: 'error',
+                    text1: 'Please Log Again',
+                });
+                router.replace('/login');
             } else {
-                Alert.alert("Error", error.message);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Update Failed',
+                });
             }
         } finally {
             setIsLoading(false);
@@ -184,7 +203,10 @@ export default function ProfileScreen() {
             await logoutUser();
             router.replace('/'); // Go back to login
         } catch (error: any) {
-            Alert.alert("Error", "Failed to log out.");
+            Toast.show({
+                type: 'error',
+                text1: 'Fail to Log Out',
+            });
         }
     };
 
@@ -273,6 +295,7 @@ export default function ProfileScreen() {
                 <StyledInput value={tempPassword} onChangeText={setTempPassword} secureTextEntry placeholder="••••••••" />
                 <ActionButton label="Set New Password" onPress={handleUpdatePassword} loading={isLoading} color="bg-red-500" />
             </CyberModal>
+            <Toast config={toastConfig} />
         </View>
     );
 }
