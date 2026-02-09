@@ -65,3 +65,21 @@ export const updateUserPassword = async (newPassword: string): Promise<void> => 
         throw error as AuthError;
     }
 };
+
+// This function now just SAVES the URL to Firebase
+export const saveProfileUrlToFirebase = async (downloadUrl: string): Promise<void> => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user logged in");
+
+        // 1. Update Auth Profile (so it shows up in user.photoURL)
+        await updateProfile(user, { photoURL: downloadUrl });
+
+        // 2. Update Firestore User Document (so it's in your database)
+        const userDocRef = doc(db, "users", user.uid);
+        await updateDoc(userDocRef, { photo: downloadUrl });
+
+    } catch (error: any) {
+        throw new Error(error.message || "Failed to save profile URL");
+    }
+};

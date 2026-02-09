@@ -8,10 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { auth } from '@/services/firebase'; // Adjust path if needed
+import Toast from 'react-native-toast-message';
 
 // Import Services
 import { updateUserName, updateUserEmail, updateUserPassword } from '../../services/profileService';
 import { logoutUser } from '../../services/authService'; // Assuming you have this from before
+import { uploadToCloudinary } from '../../services/cloudinaryService';
+import { saveProfileUrlToFirebase } from '../../services/profileService';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -47,20 +50,51 @@ export default function ProfileScreen() {
         );
     };
 
+    // 1. The Helper Function (Defines what happens when an image is ready)
+    const handleImageUpload = async (uri: string) => {
+        setIsLoading(true);
+        try {
+            const cloudinaryUrl = await uploadToCloudinary(uri);
+            await saveProfileUrlToFirebase(cloudinaryUrl);
+            setUser({ ...user, photo: cloudinaryUrl });
+
+            // SUCCESS TOAST
+            Toast.show({
+                type: 'success',
+                text1: 'Photo Updated',
+                text2: 'Your new avatar looks great!',
+                visibilityTime: 3000,
+            });
+
+        } catch (error: any) {
+            // ERROR TOAST
+            Toast.show({
+                type: 'error',
+                text1: 'Upload Failed',
+                text2: error.message || "Something went wrong.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    // 2. Update Gallery Logic
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 1,
+            quality: 0.5, // Lower quality slightly for faster uploads
         });
 
         if (!result.canceled) {
-            setUser({ ...user, photo: result.assets[0].uri });
-            // TODO: Upload image to Firebase Storage here if needed
+            // CALL IT HERE:
+            await handleImageUpload(result.assets[0].uri);
         }
     };
 
+    // 3. Update Camera Logic
     const takePhoto = async () => {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
@@ -71,11 +105,12 @@ export default function ProfileScreen() {
         let result = await ImagePicker.launchCameraAsync({
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 1,
+            quality: 0.5,
         });
 
         if (!result.canceled) {
-            setUser({ ...user, photo: result.assets[0].uri });
+            // CALL IT HERE:
+            await handleImageUpload(result.assets[0].uri);
         }
     };
 
@@ -86,11 +121,22 @@ export default function ProfileScreen() {
         setIsLoading(true);
         try {
             await updateUserName(tempName);
-            setUser({ ...user, name: tempName }); // Update UI
+            setUser({ ...user, name: tempName });
             setActiveModal("none");
-            Alert.alert("Success", "Username updated!");
+
+            // SUCCESS TOAST
+            Toast.show({
+                type: 'success',
+                text1: 'Username Updated',
+                text2: `You are now known as ${tempName}`,
+            });
+
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            Toast.show({
+                type: 'error',
+                text1: 'Update Failed',
+                text2: error.message,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -227,7 +273,6 @@ export default function ProfileScreen() {
                 <StyledInput value={tempPassword} onChangeText={setTempPassword} secureTextEntry placeholder="••••••••" />
                 <ActionButton label="Set New Password" onPress={handleUpdatePassword} loading={isLoading} color="bg-red-500" />
             </CyberModal>
-
         </View>
     );
 }

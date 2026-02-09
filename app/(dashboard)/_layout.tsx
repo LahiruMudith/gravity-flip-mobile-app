@@ -16,6 +16,8 @@ const DashboardLayout = () => {
                 <Stack.Screen name="home" options={{title: 'Home'}}/>
                 <Stack.Screen name="game" options={{title: 'Game'}}/>
                 <Stack.Screen name="profile" options={{title: 'Profile'}}/>
+
+                <Toast config={toastConfig} />
             </Stack>
         </>
     )
