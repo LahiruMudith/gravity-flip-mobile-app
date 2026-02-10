@@ -79,6 +79,7 @@ export default function SignupScreen({ navigation }: Props) {
                     value={fullName}
                     onChangeText={setFullName}
                     autoCapitalize="words"
+                    focusable={true}
                 />
             </View>
 

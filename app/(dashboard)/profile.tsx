@@ -276,7 +276,7 @@ export default function ProfileScreen() {
             {/* 1. Edit Profile */}
             <CyberModal visible={activeModal === "edit-profile"} title="Edit Profile" onClose={() => setActiveModal("none")}>
                 <InputLabel label="Username" />
-                <StyledInput value={tempName} onChangeText={setTempName} placeholder="Enter username" />
+                <StyledInput value={tempName} onChangeText={setTempName} placeholder="Enter username" autoFocus={true}/>
                 <ActionButton label="Save Changes" onPress={handleUpdateName} loading={isLoading} color="bg-green-500" />
             </CyberModal>
 
