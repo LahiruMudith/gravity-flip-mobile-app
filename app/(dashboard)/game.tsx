@@ -15,6 +15,9 @@ import CollisionSystem from '../../components/game/CollisionSystem';
 import GameOverlay from '../../components/game/GameOverlay';
 import ScrollingBackground from '../../components/game/ScrollingBackground';
 import BackgroundSystem from '../../components/game/BackgroundSystem';
+import {saveGameScore} from "@/services/scoreService";
+import Toast from "react-native-toast-message";
+import {toastConfig} from "@/constants/toastConfig";
 
 const { width, height } = Dimensions.get("window");
 
@@ -61,15 +64,29 @@ export default function GameScreen() {
         };
     };
 
-    const handleEvent = (e: any) => {
+    const handleEvent = async (e: any) => {
         if (e.type === "game-over") {
+            // 1. Stop Game
             setGameState("game-over");
-            gameEngineRef.current.stop(); // Stop the loop
-            setScore(e.score); // Save the score to state
-            // OPTIONAL: Capture the final score from the event if you pass it
-            // For now, the visual score resets, but you can sync this if needed.
+            gameEngineRef.current.stop();
+            const finalScore = e.score;
+            setScore(finalScore);
+
+            // 2. Save Score to Database
+            // We use 'async' inside here, but since handleEvent can't be awaited by GameEngine,
+            // we just fire and forget the promise (or handle with .then)
+            saveGameScore(finalScore).then((isHighScore) => {
+                if (isHighScore) {
+                    // Show Celebration Toast
+                    Toast.show({
+                        type: 'success',
+                        text1: `NEW HIGH SCORE: ${finalScore}!`,
+                        text2: 'You are moving up the ranks!',
+                    });
+                }
+            });
         }
-    };
+    }
 
     const startGame = () => {
         setGameState("playing");
@@ -110,6 +127,7 @@ export default function GameScreen() {
                 onStart={startGame}
                 onRestart={startGame}
             />
+            <Toast config={toastConfig} />
         </View>
     );
 }
