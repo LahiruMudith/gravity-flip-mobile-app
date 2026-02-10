@@ -126,6 +126,11 @@ export default function GameScreen() {
                 score={score}
                 onStart={startGame}
                 onRestart={startGame}
+                // NEW: Pass the navigation logic here
+                onHome={() => {
+                    gameEngineRef.current?.stop(); // Stop physics loop
+                    router.replace('/home');       // Go to Home
+                }}
             />
             <Toast config={toastConfig} />
         </View>
