@@ -7,8 +7,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
-import { auth } from '@/services/firebase'; // Adjust path if needed
+import { auth, db } from '@/services/firebase'; // Adjust path if needed
 import Toast from 'react-native-toast-message';
+import { doc, onSnapshot } from 'firebase/firestore'; // <--- ADD THIS
 
 // Import Services
 import { updateUserName, updateUserEmail, updateUserPassword, saveProfileUrlToFirebase } from '@/services/profileService';
@@ -31,6 +32,34 @@ export default function ProfileScreen() {
         highScore: 0, // Replace with real Firestore data later
         lastScore: 0,
     });
+
+    useEffect(() => {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        // Reference to the user's document in database
+        const userDocRef = doc(db, "users", currentUser.uid);
+
+        // Listen for changes
+        const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+
+                // Update state with real data
+                setUser(prevUser => ({
+                    ...prevUser,
+                    highScore: data.highScore || 0,
+                    lastScore: data.lastScore || 0,
+                    // Optional: Sync name/photo if they changed on another device
+                    name: data.name || prevUser.name,
+                    photo: data.photo || prevUser.photo
+                }));
+            }
+        });
+
+        // Cleanup listener when leaving screen
+        return () => unsubscribe();
+    }, []);
 
     // Form States
     const [tempName, setTempName] = useState(user.name);
