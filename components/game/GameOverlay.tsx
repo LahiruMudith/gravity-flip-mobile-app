@@ -17,7 +17,7 @@ const GameOverlay = ({ gameState, score, onStart, onRestart, onHome }: GameOverl
     if (gameState === "playing") return null;
 
     const mainAction = gameState === "start" ? onStart : onRestart;
-    const mainButtonText = gameState === "start" ? "INITIALIZE" : "RETRY SYSTEM";
+    const mainButtonText = gameState === "start" ? "INITIALIZE" : "RETRY GAME";
 
     return (
         // Container: Dark background with glowing side borders for a HUD feel
