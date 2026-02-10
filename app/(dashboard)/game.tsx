@@ -15,6 +15,7 @@ import CollisionSystem from '../../components/game/CollisionSystem';
 import GameOverlay from '../../components/game/GameOverlay';
 import ScrollingBackground from '../../components/game/ScrollingBackground';
 import BackgroundSystem from '../../components/game/BackgroundSystem';
+import VideoBackground from '../../components/game/VideoBackground'; // <--- Import this
 import Spaceship from '../../components/game/Spaceship';
 import { saveGameScore } from "@/services/scoreService";
 import Toast from "react-native-toast-message";
@@ -40,6 +41,7 @@ export default function GameScreen() {
         const floorBody = Matter.Bodies.rectangle(width / 2, height + 25, width, 50, { isStatic: true, label: "Floor" });
         const ceilingBody = Matter.Bodies.rectangle(width / 2, -25, width, 50, { isStatic: true, label: "Ceiling" });
 
+        // Background Body (Sensor)
         const backgroundBody = Matter.Bodies.rectangle(0, 0, width, height, {
             isStatic: true,
             isSensor: true
@@ -50,10 +52,11 @@ export default function GameScreen() {
         return {
             physics: { engine: engine, world: world },
 
+            // --- MODIFIED: Use Video Renderer ---
             background: {
                 body: backgroundBody,
-                imgSource: { uri: '../../assets/bg.png' },
-                renderer: ScrollingBackground
+                // We don't need 'imgSource' anymore because the video is inside the component
+                renderer: VideoBackground
             },
 
             player: {
@@ -62,8 +65,7 @@ export default function GameScreen() {
                 renderer: Spaceship
             },
 
-            // --- THE FIX: Set renderer to null ---
-            // This keeps the physics wall but makes it invisible
+            // Invisible walls (Renderer: null)
             floor: { body: floorBody, size: [width, 50], renderer: null },
             ceiling: { body: ceilingBody, size: [width, 50], renderer: null },
 
@@ -71,6 +73,7 @@ export default function GameScreen() {
             nextGap: 300,
         };
     };
+
     const handleEvent = async (e: any) => {
         if (e.type === "game-over") {
             setGameState("game-over");
