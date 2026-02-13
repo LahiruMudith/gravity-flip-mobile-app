@@ -9,14 +9,15 @@ const { width, height } = Dimensions.get('screen');
 const PIPE_WIDTH = 50;
 const BASE_SPEED = 1;
 const SPEED_MULTIPLIER = 0.05;
-const MAX_SPEED = 14;
+const MAX_SPEED = 8;
 const MIN_GAP = 250;
-const MAX_GAP = 450;
+const MAX_GAP = 650;
 
 // --- SETTINGS ---
 const MIN_PIPE_HEIGHT = height * 0.1;
-const MAX_SINGLE_BLOCK_HEIGHT = height * 0.15;
-const TOP_OFFSET = 60;
+const MAX_SINGLE_BLOCK_HEIGHT = height * 0.25;
+const TOP_OFFSET = 10;
+const BOTTOM_OFFSET = 15;
 
 // --- NEON COLORS ---
 // Brighter colors look better for neon
@@ -74,14 +75,14 @@ export default (entities: any, { time, dispatch }: any) => {
 
             const gapPosition = Math.random() * (maxGapY - minGapY) + minGapY;
 
-            const topHeight = gapPosition - TOP_OFFSET;
-            const bottomHeight = height - gapSize - gapPosition;
+            const topHeight = gapPosition;
+            const bottomHeight = height - gapSize - gapPosition - BOTTOM_OFFSET;
 
             const topBody = Matter.Bodies.rectangle(
                 spawnX,
                 TOP_OFFSET + (topHeight / 2),
                 PIPE_WIDTH,
-                topHeight,
+                BOTTOM_OFFSET + (topHeight / 2),
                 { isStatic: true, label: "Obstacle" }
             );
 
@@ -97,7 +98,7 @@ export default (entities: any, { time, dispatch }: any) => {
         else if (pattern === 1) {
             // PATTERN 2: CENTER FLOATING
             const blockSize = Math.random() * (MAX_SINGLE_BLOCK_HEIGHT - MIN_PIPE_HEIGHT) + MIN_PIPE_HEIGHT;
-            const randomY = Math.random() * (height - 300 - TOP_OFFSET) + (150 + TOP_OFFSET);
+            const randomY = Math.random() * (height - 300) + (150);
 
             const centerBody = Matter.Bodies.rectangle(spawnX, randomY, PIPE_WIDTH, blockSize, { isStatic: true, label: "Obstacle" });
 
@@ -113,7 +114,7 @@ export default (entities: any, { time, dispatch }: any) => {
 
             let yPos = 0;
             if (isTop) {
-                yPos = TOP_OFFSET + (blockSize / 2);
+                yPos = (blockSize / 2);
             } else {
                 yPos = height - (blockSize / 2);
             }
