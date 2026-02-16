@@ -32,7 +32,6 @@ yarn-error.*
 
 # environment variables (Keep secrets safe!)
 .env
-.env.*
 
 # typescript
 *.tsbuildinfo
