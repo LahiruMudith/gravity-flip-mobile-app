@@ -25,6 +25,14 @@ export default function HomePage() {
                     <Text className="text-black text-lg font-extrabold">START GAME</Text>
                 </TouchableOpacity>
 
+                {/* Leaderboard Button */}
+                {/*<TouchableOpacity*/}
+                {/*    className="bg-zinc-800 py-4 rounded-xl items-center active:bg-zinc-700"*/}
+                {/*    onPress={() => router.push('/leaderboard')}*/}
+                {/*>*/}
+                {/*    <Text className="text-white text-lg font-bold">LEADERBOARD</Text>*/}
+                {/*</TouchableOpacity>*/}
+
                 {/* Profile Button - uses 'bg-zinc-800' for a secondary look */}
                 <TouchableOpacity
                     className="bg-zinc-800 py-4 rounded-xl items-center active:bg-zinc-700"

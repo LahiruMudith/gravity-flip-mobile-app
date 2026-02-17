@@ -14,6 +14,7 @@ const DashboardLayout = () => {
                 }}
             >
                 <Stack.Screen name="home" options={{title: 'Home'}}/>
+                {/*<Stack.Screen name="leaderboard" options={{title: 'Leader Board'}}/>*/}
                 <Stack.Screen name="game" options={{title: 'Game'}}/>
                 <Stack.Screen name="profile" options={{title: 'Profile'}}/>
 
