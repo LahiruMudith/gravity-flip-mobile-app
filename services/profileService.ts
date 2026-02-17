@@ -35,6 +35,14 @@ export const updateUserEmail = async (newEmail: string): Promise<void> => {
         const user = auth.currentUser;
         if (!user) throw new Error("No user is currently logged in.");
 
+        // --- NEW SAFETY CHECK: Prevent Google users from changing emails ---
+        const isGoogleUser = user.providerData.some(
+            (provider) => provider.providerId === 'google.com'
+        );
+        if (isGoogleUser) {
+            throw new Error("Cannot change email for Google sign-in accounts.");
+        }
+
         // A. Update Auth Email
         await updateEmail(user, newEmail);
 

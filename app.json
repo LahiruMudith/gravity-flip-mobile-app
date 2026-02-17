@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lahiru.gravityflip",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -52,6 +53,12 @@
           "android": {
             "kotlinVersion": "2.1.20"
           }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.103850846573-1psstm444383rq3kvsbqhn2b6c1dirhb"
         }
       ]
     ],

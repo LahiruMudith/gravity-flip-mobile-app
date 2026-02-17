@@ -30,8 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# environment variables (Keep secrets safe!)
-.env
+# local env files
+.env*.local
 
 # typescript
 *.tsbuildinfo
@@ -41,16 +41,3 @@ app-example
 # generated native folders
 /ios
 /android
-
-# =========================================
-# --- ADDED FOR GRAVITY FLIP & FIREBASE ---
-# =========================================
-
-# Firebase Secret Configs (NEVER PUSH THESE)
-google-services.json
-GoogleService-Info.plist
-
-# Local App Builds (Do not push massive install files)
-*.apk
-*.aab
-*.ipa

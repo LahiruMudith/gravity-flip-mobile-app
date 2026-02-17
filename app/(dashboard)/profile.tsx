@@ -175,29 +175,35 @@ export default function ProfileScreen() {
         setIsLoading(true);
         try {
             await updateUserEmail(tempEmail);
-            setUser({ ...user, email: tempEmail }); // Update UI
+            setUser({...user, email: tempEmail}); // Update UI
             setActiveModal("none");
             Toast.show({
                 type: 'success',
                 text1: 'Email Updated',
             });
         } catch (error: any) {
+            // 1. Print the exact error to your VS Code terminal
+            console.log("EMAIL UPDATE ERROR:", error.code, error.message);
+
             if (error.code === 'auth/requires-recent-login') {
                 Toast.show({
                     type: 'error',
-                    text1: 'Please Log Again',
+                    text1: 'Security Check',
+                    text2: 'Please log in again to change sensitive data.',
                 });
                 router.replace('/login');
             } else {
+                // 2. Show the ACTUAL error message on the phone screen
                 Toast.show({
                     type: 'error',
                     text1: 'Update Failed',
+                    text2: error.message,
                 });
             }
         } finally {
             setIsLoading(false);
         }
-    };
+    }
 
     const handleUpdatePassword = async () => {
         if (!tempPassword.trim()) return;
