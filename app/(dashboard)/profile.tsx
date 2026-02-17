@@ -20,11 +20,9 @@ import {toastConfig} from "@/constants/toastConfig";
 export default function ProfileScreen() {
     const router = useRouter();
 
-    // --- STATE ---
     const [activeModal, setActiveModal] = useState<"none" | "edit-profile" | "email" | "password">("none");
     const [isLoading, setIsLoading] = useState(false);
 
-    // User Data State
     const [user, setUser] = useState({
         name: auth.currentUser?.displayName || "Cyber Player",
         email: auth.currentUser?.email || "player@websonic.com",
@@ -37,27 +35,22 @@ export default function ProfileScreen() {
         const currentUser = auth.currentUser;
         if (!currentUser) return;
 
-        // Reference to the user's document in database
         const userDocRef = doc(db, "users", currentUser.uid);
 
-        // Listen for changes
         const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
                 const data = docSnapshot.data();
 
-                // Update state with real data
                 setUser(prevUser => ({
                     ...prevUser,
                     highScore: data.highScore || 0,
                     lastScore: data.lastScore || 0,
-                    // Optional: Sync name/photo if they changed on another device
                     name: data.name || prevUser.name,
                     photo: data.photo || prevUser.photo
                 }));
             }
         });
 
-        // Cleanup listener when leaving screen
         return () => unsubscribe();
     }, []);
 
@@ -66,7 +59,6 @@ export default function ProfileScreen() {
     const [tempEmail, setTempEmail] = useState("");
     const [tempPassword, setTempPassword] = useState("");
 
-    // --- IMAGE PICKER ---
     const handleAvatarPress = () => {
         Alert.alert(
             "Update Profile Photo",
@@ -79,7 +71,6 @@ export default function ProfileScreen() {
         );
     };
 
-    // 1. The Helper Function (Defines what happens when an image is ready)
     const handleImageUpload = async (uri: string) => {
         setIsLoading(true);
         try {
@@ -95,7 +86,6 @@ export default function ProfileScreen() {
             });
 
         } catch (error: any) {
-            // ERROR TOAST
             Toast.show({
                 type: 'error',
                 text1: 'Upload Failed',
@@ -106,22 +96,19 @@ export default function ProfileScreen() {
     };
 
 
-    // 2. Update Gallery Logic
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.5, // Lower quality slightly for faster uploads
+            quality: 0.5,
         });
 
         if (!result.canceled) {
-            // CALL IT HERE:
             await handleImageUpload(result.assets[0].uri);
         }
     };
 
-    // 3. Update Camera Logic
     const takePhoto = async () => {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
@@ -139,12 +126,10 @@ export default function ProfileScreen() {
         });
 
         if (!result.canceled) {
-            // CALL IT HERE:
             await handleImageUpload(result.assets[0].uri);
         }
     };
 
-    // --- SERVICE HANDLERS ---
 
     const handleUpdateName = async () => {
         if (!tempName.trim()) return;
@@ -154,7 +139,6 @@ export default function ProfileScreen() {
             setUser({ ...user, name: tempName });
             setActiveModal("none");
 
-            // SUCCESS TOAST
             Toast.show({
                 type: 'success',
                 text1: 'Username Updated',
@@ -175,14 +159,13 @@ export default function ProfileScreen() {
         setIsLoading(true);
         try {
             await updateUserEmail(tempEmail);
-            setUser({...user, email: tempEmail}); // Update UI
+            setUser({...user, email: tempEmail});
             setActiveModal("none");
             Toast.show({
                 type: 'success',
                 text1: 'Email Updated',
             });
         } catch (error: any) {
-            // 1. Print the exact error to your VS Code terminal
             console.log("EMAIL UPDATE ERROR:", error.code, error.message);
 
             if (error.code === 'auth/requires-recent-login') {
@@ -193,7 +176,6 @@ export default function ProfileScreen() {
                 });
                 router.replace('/login');
             } else {
-                // 2. Show the ACTUAL error message on the phone screen
                 Toast.show({
                     type: 'error',
                     text1: 'Update Failed',
@@ -236,7 +218,7 @@ export default function ProfileScreen() {
     const handleLogout = async () => {
         try {
             await logoutUser();
-            router.replace('/'); // Go back to login
+            router.replace('/');
         } catch (error: any) {
             Toast.show({
                 type: 'error',
@@ -249,7 +231,6 @@ export default function ProfileScreen() {
         <View className="flex-1 bg-black">
             <StatusBar style="light" />
 
-            {/* HEADER */}
             <View className="pt-14 px-6 mb-6">
                 <TouchableOpacity
                     onPress={() => router.back()}
@@ -261,7 +242,6 @@ export default function ProfileScreen() {
 
             <ScrollView className="flex-1 px-6">
 
-                {/* HERO SECTION */}
                 <View className="items-center mb-10">
                     <View className="w-32 h-32 bg-zinc-900 rounded-full border-4 border-green-400 items-center justify-center mb-4 shadow-2xl shadow-green-500/40 relative overflow-hidden">
                         {user.photo ? (
@@ -281,13 +261,11 @@ export default function ProfileScreen() {
                     <Text className="text-zinc-500 font-medium text-base mt-1">{user.email}</Text>
                 </View>
 
-                {/* STATS */}
                 <View className="flex-row justify-between mb-10">
                     <StatCard icon="trophy" color="#fbbf24" label="High Score" value={user.highScore} />
                     <StatCard icon="time" color="#4ade80" label="Last Run" value={user.lastScore} />
                 </View>
 
-                {/* MENU */}
                 <Text className="text-zinc-500 font-bold uppercase tracking-widest mb-4 px-2">Manage Account</Text>
                 <View className="space-y-3 mb-10">
                     <MenuItem icon="person-outline" label="Edit Profile" onPress={() => { setTempName(user.name); setActiveModal("edit-profile"); }} />
@@ -295,7 +273,6 @@ export default function ProfileScreen() {
                     <MenuItem icon="lock-closed-outline" label="Change Password" onPress={() => { setTempPassword(""); setActiveModal("password"); }} />
                 </View>
 
-                {/* LOGOUT */}
                 <TouchableOpacity
                     className="flex-row items-center justify-center bg-red-500/10 border border-red-500/50 p-4 rounded-2xl active:bg-red-500/20 mb-12"
                     onPress={handleLogout}
@@ -306,16 +283,13 @@ export default function ProfileScreen() {
 
             </ScrollView>
 
-            {/* --- MODALS --- */}
 
-            {/* 1. Edit Profile */}
             <CyberModal visible={activeModal === "edit-profile"} title="Edit Profile" onClose={() => setActiveModal("none")}>
                 <InputLabel label="Username" />
                 <StyledInput value={tempName} onChangeText={setTempName} placeholder="Enter username" autoFocus={true}/>
                 <ActionButton label="Save Changes" onPress={handleUpdateName} loading={isLoading} color="bg-green-500" />
             </CyberModal>
 
-            {/* 2. Update Email */}
             <CyberModal visible={activeModal === "email"} title="Update Email" onClose={() => setActiveModal("none")}>
                 <InputLabel label="Current Email" />
                 <View className="bg-zinc-800 p-4 rounded-xl mb-6 border border-zinc-700"><Text className="text-zinc-400">{user.email}</Text></View>
@@ -324,7 +298,6 @@ export default function ProfileScreen() {
                 <ActionButton label="Update Email" onPress={handleUpdateEmail} loading={isLoading} color="bg-zinc-700" />
             </CyberModal>
 
-            {/* 3. Change Password */}
             <CyberModal visible={activeModal === "password"} title="Change Password" onClose={() => setActiveModal("none")}>
                 <InputLabel label="New Password" />
                 <StyledInput value={tempPassword} onChangeText={setTempPassword} secureTextEntry placeholder="••••••••" />
@@ -335,7 +308,6 @@ export default function ProfileScreen() {
     );
 }
 
-// --- COMPONENTS ---
 
 const MenuItem = ({ icon, label, onPress }: any) => (
     <TouchableOpacity onPress={onPress} className="flex-row items-center bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 active:bg-zinc-800">

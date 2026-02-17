@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-// 1. Import updateProfile
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/services/firebase';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -18,14 +17,12 @@ type Props = {
 
 export default function SignupScreen({ navigation }: Props) {
     const router = useRouter();
-    // 2. Add state for Full Name
     const [fullName, setFullName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleSignup = async () => {
-        // 3. Update validation
         if (!email || !password || !fullName) {
             Toast.show({
                 type: 'error',
@@ -36,7 +33,6 @@ export default function SignupScreen({ navigation }: Props) {
 
         setLoading(true);
         try {
-            // Create the user
             const userCredential = await registerUser(email, password, fullName);
 
             if (auth.currentUser) {
@@ -69,7 +65,6 @@ export default function SignupScreen({ navigation }: Props) {
             </Text>
             <Text className="text-gray-400 mb-10 text-base">Create an account to save your scores</Text>
 
-            {/* 5. Full Name Input Field */}
             <View className="w-full mb-4">
                 <Text className="text-gray-300 mb-2 ml-1">Full Name</Text>
                 <TextInput
@@ -83,7 +78,6 @@ export default function SignupScreen({ navigation }: Props) {
                 />
             </View>
 
-            {/* Email Input */}
             <View className="w-full mb-4">
                 <Text className="text-gray-300 mb-2 ml-1">Email</Text>
                 <TextInput
@@ -97,7 +91,6 @@ export default function SignupScreen({ navigation }: Props) {
                 />
             </View>
 
-            {/* Password Input */}
             <View className="w-full mb-8">
                 <Text className="text-gray-300 mb-2 ml-1">Password</Text>
                 <TextInput
@@ -110,7 +103,6 @@ export default function SignupScreen({ navigation }: Props) {
                 />
             </View>
 
-            {/* Signup Button */}
             <TouchableOpacity
                 className="w-full bg-white p-4 rounded-xl items-center shadow-lg"
                 onPress={handleSignup}
@@ -123,7 +115,6 @@ export default function SignupScreen({ navigation }: Props) {
                 )}
             </TouchableOpacity>
 
-            {/* Toggle to Login */}
             <View className="flex-row mt-6">
                 <Text className="text-gray-400">Already have an account? </Text>
                 <TouchableOpacity onPress={() => router.push('/login')}>

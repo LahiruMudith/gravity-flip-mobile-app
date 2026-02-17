@@ -1,12 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react'; // <-- Added useEffect
+import React, { useRef, useState, useEffect } from 'react';
 import { View, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
 import { GameEngine } from 'react-native-game-engine';
 import Matter from 'matter-js';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av'; // <-- Added Audio Import
+import { Audio } from 'expo-av';
 
-// Components
 import Box from '../../components/game/Box';
 import Score from '../../components/game/Score';
 import Physics from '../../components/game/Physics';
@@ -29,14 +28,12 @@ export default function GameScreen() {
     const [score, setScore] = useState(0);
     const gameEngineRef = useRef<any>(null);
 
-    // --- ADDED: Audio State ---
     const [gameOverSound, setGameOverSound] = useState<Audio.Sound | null>(null);
 
-    // --- ADDED: Function to load and play the sound ---
     async function playGameOverSound() {
         try {
             const { sound } = await Audio.Sound.createAsync(
-                require('../../assets/game_over.mp3') // Make sure this file exists!
+                require('../../assets/game_over.mp3')
             );
             setGameOverSound(sound);
             await sound.playAsync();
@@ -45,7 +42,6 @@ export default function GameScreen() {
         }
     }
 
-    // --- ADDED: Memory Cleanup (CRITICAL for games) ---
     useEffect(() => {
         return gameOverSound
             ? () => {
@@ -87,7 +83,6 @@ export default function GameScreen() {
             const finalScore = e.score;
             setScore(finalScore);
 
-            // --- ADDED: Trigger the sound right when they die ---
             playGameOverSound();
 
             saveGameScore(finalScore).then((isHighScore) => {

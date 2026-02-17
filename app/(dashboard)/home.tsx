@@ -7,17 +7,14 @@ export default function HomePage() {
     const router = useRouter();
 
     return (
-        // 'flex-1' fills screen, 'bg-black' for that dark game theme
         <View className="flex-1 bg-black items-center justify-center">
             <StatusBar style="light" />
 
-            {/* Title with Neon Green text and shadow effect */}
             <Text className="text-5xl font-bold text-green-400 mb-12 tracking-widest shadow-lg shadow-green-500/50">
                 GRAVITY FLIP
             </Text>
 
             <View className="w-4/5 space-y-4">
-                {/* Play Button */}
                 <TouchableOpacity
                     className="bg-green-400 py-4 rounded-xl items-center active:bg-green-500"
                     onPress={() => router.push('/game')}

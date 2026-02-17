@@ -2,9 +2,6 @@ import React from 'react';
 import { View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
-// This imports your perfect UI code from step 1!
-// (Double check this path matches your folder structure)
 import Leaderboard from '../../components/game/Leaderboard';
 
 

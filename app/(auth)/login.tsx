@@ -6,7 +6,6 @@ import Toast from 'react-native-toast-message';
 import { toastConfig } from "@/app/constants/toastConfig";
 import { RootStackParamList } from '../constants/types';
 
-// ONLY import the service functions now! No Firebase or Google imports needed here.
 import { loginUser, loginWithGoogle } from "@/services/authService";
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -23,7 +22,6 @@ export default function LoginScreen({ navigation }: Props) {
     const [loading, setLoading] = useState<boolean>(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
 
-    // --- STANDARD EMAIL LOGIN ---
     const handleLogin = async () => {
         if (!email || !password) return Toast.show({
             type: 'error',
@@ -42,7 +40,6 @@ export default function LoginScreen({ navigation }: Props) {
         }
     };
 
-    // --- REFACTORED GOOGLE LOGIN ---
     const handleGoogleLogin = async () => {
         setIsGoogleLoading(true);
         try {
@@ -59,7 +56,6 @@ export default function LoginScreen({ navigation }: Props) {
         } catch (error: any) {
             console.log("Google Auth Error:", error);
 
-            // Don't show an angry red error if they simply backed out of the menu
             if (error.message !== "cancelled") {
                 Toast.show({
                     type: 'error',
@@ -79,7 +75,6 @@ export default function LoginScreen({ navigation }: Props) {
             </Text>
             <Text className="text-gray-400 mb-10 text-lg">Login to Start Running</Text>
 
-            {/* Email Input */}
             <View className="w-full mb-4">
                 <Text className="text-gray-300 mb-2 ml-1">Email</Text>
                 <TextInput
@@ -93,7 +88,6 @@ export default function LoginScreen({ navigation }: Props) {
                 />
             </View>
 
-            {/* Password Input */}
             <View className="w-full mb-8">
                 <Text className="text-gray-300 mb-2 ml-1">Password</Text>
                 <TextInput
@@ -106,7 +100,6 @@ export default function LoginScreen({ navigation }: Props) {
                 />
             </View>
 
-            {/* Email Login Button */}
             <TouchableOpacity
                 className="w-full bg-green-500 p-4 rounded-xl items-center shadow-lg shadow-green-500/50"
                 onPress={handleLogin}
@@ -119,14 +112,12 @@ export default function LoginScreen({ navigation }: Props) {
                 )}
             </TouchableOpacity>
 
-            {/* Divider */}
             <View className="flex-row items-center my-6 w-full">
                 <View className="flex-1 h-[1px] bg-gray-700" />
                 <Text className="text-gray-500 px-4 font-bold">OR</Text>
                 <View className="flex-1 h-[1px] bg-gray-700" />
             </View>
 
-            {/* Google Login Button */}
             <TouchableOpacity
                 className="w-full bg-white p-4 rounded-xl items-center flex-row justify-center shadow-lg"
                 onPress={handleGoogleLogin}
@@ -139,7 +130,6 @@ export default function LoginScreen({ navigation }: Props) {
                 )}
             </TouchableOpacity>
 
-            {/* Toggle to Signup */}
             <View className="flex-row mt-8">
                 <Text className="text-gray-400">Don&#39;t have an account? </Text>
                 <TouchableOpacity onPress={() => router.push('/signup')}>
