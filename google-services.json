@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "103850846573",
+    "project_id": "gravity-flip-2d-game",
+    "storage_bucket": "gravity-flip-2d-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103850846573:android:85aebe2c50ab2ac623d264",
+        "android_client_info": {
+          "package_name": "com.lahiru_mudith.gravityflip"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "103850846573-oreut6rfijstfpggh30nf3ng161ciqhs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lahiru_mudith.gravityflip",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "103850846573-lu8538if3ojb2uofmbpldkknomt1l8hm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYEx1sZD1D974BSrYDrNmzT320_yTwJHk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "103850846573-lu8538if3ojb2uofmbpldkknomt1l8hm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
